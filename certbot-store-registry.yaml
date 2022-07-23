@@ -1,0 +1,37 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  DynamoDB registry table
+
+Parameters:
+  TableName:
+    Type: String
+    Default: certbot-registry
+    Description: Table name for the registry.
+
+Resources:
+  RegistryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref TableName
+      AttributeDefinitions:
+        - AttributeName: hostname
+          AttributeType: S
+      KeySchema:
+        - AttributeName: hostname
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+      Tags:
+        - Key: Name
+          Value: !Ref TableName
+        - Key: StackId
+          Value: !Ref AWS::StackId
+        - Key: StackName
+          Value: !Ref AWS::StackName
+
+Outputs:
+  TableName:
+    Value: !Ref RegistryTable
+  TableArn:
+    Value: !GetAtt RegistryTable.Arn

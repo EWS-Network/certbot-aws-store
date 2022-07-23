@@ -1,0 +1,55 @@
+[tool.poetry]
+name = "certbot-aws-store"
+version = "0.1.0"
+description = "Generate Let's Encrypt certificates and store into AWS"
+authors = ["John Preston <john@ews-network.net>"]
+maintainers = ["John Preston <john@ews-network.net>"]
+keywords = ["compose-x", "aws", "certbot", "ACME"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: System Administrators",
+  "Intended Audience :: Information Technology",
+  "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
+  "Natural Language :: English",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+certbot = "^1.29.0"
+compose-x-common = "^1.0.4"
+certbot-route53 = "^0.2.0"
+pynamodb = "^5.2.1"
+argparse = "^1.4.0"
+pyOpenSSL = "^22.0.0"
+
+[tool.poetry.dev-dependencies]
+black = "^22.6.0"
+isort = "^5.10.1"
+pre-commit = "^2.20.0"
+Flask-Testing = "^0.8.1"
+fastapi-code-generator = "^0.3.5"
+pyupgrade = "^2.37.2"
+
+[tool.poetry.scripts]
+certbot-aws-store = "certbot_aws_store.cli:cli_entrypoint"
+
+[tool.black]
+line-length = 88
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+known_first_party = "kelvin"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

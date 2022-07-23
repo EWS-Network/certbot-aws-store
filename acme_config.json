@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "acme-config.spec.json",
+  "$id": "acme-config.spec.json",
+  "title": "acme-config",
+  "description": "acme secret configuration format",
+  "type": "object",
+  "required": [
+    "accounts"
+  ],
+  "properties": {
+    "accounts": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/definitions/account"
+      }
+    }
+  },
+  "definitions": {
+    "account": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "private_key",
+        "regr",
+        "endpoint",
+        "dirname",
+        "account_id"
+      ],
+      "properties": {
+        "account_id": {
+          "type": "string",
+          "pattern": "^\\d+$"
+        },
+        "endpoint": {
+          "type": "string",
+          "description": "ACME API endpoint the account is registered with"
+        },
+        "created_on": {
+          "type": "string",
+          "description": "created_dt from meta.json"
+        },
+        "dirname": {
+          "type": "string",
+          "pattern": "^[a-zA-Z\\d]+$",
+          "description": "The hash of the directory to store the files into"
+        },
+        "privateKey": {
+          "oneOf": [
+            {
+              "type": "object",
+              "description": "The JSON object content of the private_key.json"
+            },
+            {
+              "type": "string",
+              "description": "The JSON string content of the private_key.json"
+            }
+          ]
+        },
+        "meta": {
+          "oneOf": [
+            {
+              "type": "object",
+              "description": "JSON object of the content of meta.json",
+              "properties": {
+                "uri": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "string",
+              "description": "JSON encoded string of the meta.json content"
+            }
+          ]
+        },
+        "registration": {
+          "oneOf": [
+            {
+              "type": "object",
+              "description": "JSON object of the content of regr.json",
+              "properties": {
+                "uri": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "string",
+              "description": "JSON encoded string of the regr.json content"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
