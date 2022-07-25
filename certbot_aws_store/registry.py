@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime, timedelta
 from os import environ
 
 from pynamodb.attributes import MapAttribute, UnicodeAttribute, UTCDateTimeAttribute
@@ -41,3 +42,16 @@ class CertificateArns(Model):
     )
     secretsmanagerArn = UnicodeAttribute(null=True)
     acmArn = UnicodeAttribute(null=True)
+
+
+def get_certs_to_renew(expires_in_days: int = 28):
+    """
+    Returns list of certificates that have an expiry in expires_in_days.
+    Defaults to 28 days, which ensures that we are past the 60 days default
+    range set by Let's Encrypt
+
+    :param int expires_in_days:
+    """
+    in_future: datetime = datetime.utcnow() + timedelta(days=expires_in_days)
+    to_renew = CertificateArns().scan(CertificateArns.expiry < in_future)
+    return to_renew
