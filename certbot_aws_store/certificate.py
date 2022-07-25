@@ -33,6 +33,9 @@ from certbot_aws_store.backends import (
     handle_s3_backend,
     handle_secretsmanager_secret_all_certs,
     handle_secretsmanager_secret_per_cert,
+    pull_from_s3,
+    pull_from_secrets_manager_aio,
+    pull_from_secretsmanager_secret_per_cert,
 )
 from certbot_aws_store.registry import REGISTRY_REGION, REGISTRY_TABLE, CertificateArns
 from certbot_aws_store.utils import easy_read
@@ -368,3 +371,39 @@ class AcmeCertificate:
             )
             arn = cert_r["CertificateArn"]
         return arn
+
+    def pull(
+        self,
+        destination_folder: str,
+        use_s3: bool = False,
+        split_secrets: bool = False,
+        session: Session = None,
+    ):
+        session = get_session(session)
+        if not self.exists():
+            raise ValueError(self.hostname, f"not found in table")
+        details = json.loads(self.registry_cert.get(self.hostname).to_json())
+        if use_s3:
+            locations = set_else_none("s3Arn", details)
+        elif split_secrets:
+            locations = set_else_none("secretsmanagerCertsArn", details)
+        else:
+            locations = set_else_none("secretsmanagerArn", details)
+
+        if not locations:
+            raise ValueError(
+                "Unable to determine the location of certificates from dynamodb registry"
+            )
+
+        if isinstance(locations, str) and not use_s3:
+            pull_from_secrets_manager_aio(
+                destination_folder, locations, self.private_key_file_name, session
+            )
+        elif isinstance(locations, dict) and use_s3:
+            pull_from_s3(
+                destination_folder, locations, self.private_key_file_name, session
+            )
+        else:
+            pull_from_secretsmanager_secret_per_cert(
+                destination_folder, locations, self.private_key_file_name, session
+            )

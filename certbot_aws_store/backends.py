@@ -9,10 +9,13 @@ from __future__ import annotations
 
 import datetime
 import json
+import stat
+from os import chmod
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from certbot_aws_store.certificate import AcmeCertificate
+
 import re
 import warnings
 
@@ -207,3 +210,106 @@ def handle_secretsmanager_secret_all_certs(
     )
     key_backend.put(json.dumps(content))
     return key_backend
+
+
+def pull_from_secrets_manager_aio(
+    destination_folder: str,
+    secret_arn: str,
+    private_file_name: str = None,
+    session: Session = None,
+) -> None:
+    from certbot_aws_store.certificate import AcmeCertificate
+
+    session = get_session(session)
+    client = session.client("secretsmanager")
+    try:
+        secret_value = json.loads(
+            client.get_secret_value(SecretId=secret_arn)["SecretString"]
+        )
+    except client.exceptions.ResourceNotFoundException as error:
+        print(error)
+        raise
+    except json.JSONDecodeError:
+        print("Failed to parse SecretString to JSON")
+        raise
+    for file_name, attribute in AcmeCertificate.files.items():
+        file_path = f"{destination_folder}/{file_name}"
+        with open(file_path, "w") as fd:
+            fd.write(secret_value[attribute])
+        set_certs_permissions(
+            file_name,
+            file_path,
+            private_file_name or AcmeCertificate.private_key_file_name,
+        )
+
+
+def pull_from_secretsmanager_secret_per_cert(
+    destination_folder: str,
+    locations: dict,
+    private_file_name: str = None,
+    session: Session = None,
+) -> None:
+    from certbot_aws_store.certificate import AcmeCertificate
+
+    session = get_session(session)
+    client = session.client("secretsmanager")
+    for file_name, attribute in AcmeCertificate.files.items():
+        file_path = f"{destination_folder}/{file_name}"
+        try:
+            with open(file_path, "w") as fd:
+                secret_value = client.get_secret_value(SecretId=locations[attribute])[
+                    "SecretString"
+                ]
+                fd.write(secret_value)
+            set_certs_permissions(
+                file_name,
+                file_path,
+                private_file_name or AcmeCertificate.private_key_file_name,
+            )
+        except client.exceptions.ResourceNotFoundException as error:
+            print(error)
+            raise
+
+
+def pull_from_s3(
+    destination_folder: str,
+    locations: dict,
+    private_file_name: str = None,
+    session: Session = None,
+):
+    from certbot_aws_store.certificate import AcmeCertificate
+
+    session = get_session(session)
+    for file_name, attribute in AcmeCertificate.files.items():
+        file_path = f"{destination_folder}/{file_name}"
+        parts = S3Backend.bucket_file_arn_re.match(locations[attribute])
+        if not parts:
+            raise ValueError(
+                locations[attribute],
+                "is not a valid S3 ARN",
+                S3Backend.bucket_file_arn_re.pattern,
+            )
+        resource = session.resource("s3").Object(
+            parts.group("bucket"), parts.group("key")
+        )
+        resource.download_file(file_path)
+        set_certs_permissions(
+            file_name,
+            file_path,
+            private_file_name or AcmeCertificate.private_key_file_name,
+        )
+
+
+def set_certs_permissions(
+    file_name: str, file_path: str, private_file_name: str
+) -> None:
+    if file_name == private_file_name:
+        chmod(
+            file_path,
+            stat.S_IWRITE | stat.S_IRUSR,
+        )
+    else:
+        chmod(
+            file_path,
+            stat.S_IWRITE | stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH,
+        )
