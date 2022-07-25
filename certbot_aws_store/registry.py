@@ -5,7 +5,10 @@ from os import environ
 from pynamodb.attributes import MapAttribute, UnicodeAttribute, UTCDateTimeAttribute
 from pynamodb.models import Model
 
-registry_table = environ.get("REGISTRY_TABLE", "certbot-registry")
+REGISTRY_TABLE = environ.get("REGISTRY_TABLE", "certbot-registry")
+REGISTRY_REGION = environ.get(
+    "AWS_DEFAULT_REGION", environ.get("AWS_REGION", "eu-west-1")
+)
 
 
 class CertificateArns(Model):
@@ -16,10 +19,8 @@ class CertificateArns(Model):
     """
 
     class Meta:
-        table_name = registry_table
-        region = environ.get(
-            "AWS_DEFAULT_REGION", environ.get("AWS_REGION", "eu-west-1")
-        )
+        table_name = REGISTRY_TABLE
+        region = REGISTRY_REGION
 
     hostname = UnicodeAttribute(hash_key=True)
     account_id = UnicodeAttribute(null=False)

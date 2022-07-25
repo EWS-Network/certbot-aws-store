@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 from multiprocessing import Process
 
 import OpenSSL
+from b_dynamodb_common.models.model_type_factory import ModelTypeFactory
 from boto3.session import Session
 from certbot.main import main
 from compose_x_common.aws import get_session
@@ -33,7 +34,7 @@ from certbot_aws_store.backends import (
     handle_secretsmanager_secret_all_certs,
     handle_secretsmanager_secret_per_cert,
 )
-from certbot_aws_store.registry import CertificateArns
+from certbot_aws_store.registry import REGISTRY_REGION, REGISTRY_TABLE, CertificateArns
 from certbot_aws_store.utils import easy_read
 
 
@@ -103,11 +104,16 @@ class AcmeCertificate:
         acm_store_dir: str,
         acme_store_account: Account,
         subject_alts: list = None,
+        table_name: str = None,
     ):
         self._hostname = hostname
         self.subjects_alts = subject_alts if subject_alts else []
         self.acm_store_dir = acm_store_dir
-        self.registry_cert = CertificateArns(hash_key=self.hostname)
+        self.registry_table = ModelTypeFactory(CertificateArns).create(
+            custom_table_name=table_name or REGISTRY_TABLE,
+            custom_region=REGISTRY_REGION,
+        )
+        self.registry_cert = self.registry_table(hash_key=self.hostname)
         self.s3_backend = None
         self.secretsmanager_backend = None
         self.certs_paths: dict = {}
@@ -116,18 +122,6 @@ class AcmeCertificate:
 
     def __repr__(self):
         return self.urn
-
-    @classmethod
-    def set_registry_table(cls, table_name: str):
-        cls.registry_table = table_name
-
-    @classmethod
-    def set_certificate_file_name(cls, file_name: str):
-        cls.certificate_file_name = file_name
-
-    @classmethod
-    def set_private_key_file_name(cls, file_name: str):
-        cls.private_key_file_name = file_name
 
     @property
     def hostname(self) -> str:

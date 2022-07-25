@@ -70,6 +70,19 @@ tests = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)"
 tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "mypy", "pytest-mypy-plugins", "cloudpickle"]
 
 [[package]]
+name = "b-dynamodb-common"
+version = "0.4.0"
+description = "Common functionality for interacting with dynamodb easier. Most of the functionality is based on PynamoDB ORM library."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+cryptography = ">=35.0.0,<38.0.0"
+ordered-set = ">=4.0.0,<5.0.0"
+pynamodb = ">=5.0.0,<6.0.0"
+
+[[package]]
 name = "black"
 version = "22.6.0"
 description = "The uncompromising code formatter."
@@ -643,6 +656,39 @@ optional = false
 python-versions = ">=3.7"
 
 [[package]]
+name = "mypy-boto3-acm"
+version = "1.24.0"
+description = "Type annotations for boto3.ACM 1.24.0 service generated with mypy-boto3-builder 7.6.1"
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+typing-extensions = ">=4.1.0"
+
+[[package]]
+name = "mypy-boto3-s3"
+version = "1.24.0"
+description = "Type annotations for boto3.S3 1.24.0 service generated with mypy-boto3-builder 7.6.1"
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+typing-extensions = ">=4.1.0"
+
+[[package]]
+name = "mypy-boto3-secretsmanager"
+version = "1.24.11.post3"
+description = "Type annotations for boto3.SecretsManager 1.24.11 service generated with mypy-boto3-builder 7.7.1"
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+typing-extensions = ">=4.1.0"
+
+[[package]]
 name = "mypy-extensions"
 version = "0.4.3"
 description = "Experimental type system extensions for programs checked with the mypy typechecker."
@@ -693,6 +739,17 @@ six = "*"
 
 [package.extras]
 requests = ["requests"]
+
+[[package]]
+name = "ordered-set"
+version = "4.1.0"
+description = "An OrderedSet is a custom MutableSet that remembers its order, so that every"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.extras]
+dev = ["pytest", "black", "mypy"]
 
 [[package]]
 name = "parsedatetime"
@@ -1188,7 +1245,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "81802af63bef397f9eabf99405a912fad985a6c68fdee3707d9e7aa3f1d1f88a"
+content-hash = "b7d955399b3ebdb6e7224d01f24ac14d0bf124e9e1925f3518e0f0f8f28b0fa9"
 
 [metadata.files]
 acme = [
@@ -1210,6 +1267,10 @@ argparse = [
 attrs = [
     {file = "attrs-21.4.0-py2.py3-none-any.whl", hash = "sha256:2d27e3784d7a565d36ab851fe94887c5eccd6a463168875832a1be79c82828b4"},
     {file = "attrs-21.4.0.tar.gz", hash = "sha256:626ba8234211db98e869df76230a137c4c40a12d72445c45d5f5b716f076e2fd"},
+]
+b-dynamodb-common = [
+    {file = "b_dynamodb_common-0.4.0-py3-none-any.whl", hash = "sha256:007ca794a8b27ce98b4c65f561895728d7591268559e0585c1a0ddee6a636f02"},
+    {file = "b_dynamodb_common-0.4.0.tar.gz", hash = "sha256:bb69f82dde09ac977c4fcf9fa4a5d530e120f0fdf1031bdedc9596b79dc568fc"},
 ]
 black = [
     {file = "black-22.6.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:f586c26118bc6e714ec58c09df0157fe2d9ee195c764f630eb0d8e7ccce72e69"},
@@ -1513,6 +1574,18 @@ markupsafe = [
     {file = "MarkupSafe-2.1.1-cp39-cp39-win_amd64.whl", hash = "sha256:46d00d6cfecdde84d40e572d63735ef81423ad31184100411e6e3388d405e247"},
     {file = "MarkupSafe-2.1.1.tar.gz", hash = "sha256:7f91197cc9e48f989d12e4e6fbc46495c446636dfc81b9ccf50bb0ec74b91d4b"},
 ]
+mypy-boto3-acm = [
+    {file = "mypy-boto3-acm-1.24.0.tar.gz", hash = "sha256:f256a8a849b73a6aebee92a9a9757f8aa922d7db05b61fac3ff5533a1dcdd9b1"},
+    {file = "mypy_boto3_acm-1.24.0-py3-none-any.whl", hash = "sha256:ee04af720750232d9b18ea8f3a02e2b6d89d195df48c829e5e02053c00af56c1"},
+]
+mypy-boto3-s3 = [
+    {file = "mypy-boto3-s3-1.24.0.tar.gz", hash = "sha256:213648b5c2d9fc89bfb56a6d90a5c673e1f5953e26d662259634cfff0fbaa4da"},
+    {file = "mypy_boto3_s3-1.24.0-py3-none-any.whl", hash = "sha256:5df806f8d3a8ab536af46e9ae4d9d0f471184eb4e33911d43bc87049c8188005"},
+]
+mypy-boto3-secretsmanager = [
+    {file = "mypy-boto3-secretsmanager-1.24.11.post3.tar.gz", hash = "sha256:f153b3f5ff2c65664a906fb2c97a6598a57da9f1da77679dbaf541051dcff36e"},
+    {file = "mypy_boto3_secretsmanager-1.24.11.post3-py3-none-any.whl", hash = "sha256:d9655d568f7fd8fe05265613b85fba55ab6e4dcd078989af1ef9f0ffe4b45019"},
+]
 mypy-extensions = [
     {file = "mypy_extensions-0.4.3-py2.py3-none-any.whl", hash = "sha256:090fedd75945a69ae91ce1303b5824f428daf5a028d2f6ab8a299250a846f15d"},
     {file = "mypy_extensions-0.4.3.tar.gz", hash = "sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8"},
@@ -1529,6 +1602,10 @@ openapi-schema-validator = [
 openapi-spec-validator = [
     {file = "openapi-spec-validator-0.3.3.tar.gz", hash = "sha256:43d606c5910ed66e1641807993bd0a981de2fc5da44f03e1c4ca2bb65b94b68e"},
     {file = "openapi_spec_validator-0.3.3-py2.py3-none-any.whl", hash = "sha256:49d7da81996714445116f6105c9c5955c0e197ef8636da4f368c913f64753443"},
+]
+ordered-set = [
+    {file = "ordered-set-4.1.0.tar.gz", hash = "sha256:694a8e44c87657c59292ede72891eb91d34131f6531463aab3009191c77364a8"},
+    {file = "ordered_set-4.1.0-py3-none-any.whl", hash = "sha256:046e1132c71fcf3330438a539928932caf51ddbc582496833e23de611de14562"},
 ]
 parsedatetime = [
     {file = "parsedatetime-2.6-py3-none-any.whl", hash = "sha256:cb96edd7016872f58479e35879294258c71437195760746faffedb692aef000b"},
