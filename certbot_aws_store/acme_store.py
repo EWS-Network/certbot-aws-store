@@ -32,6 +32,8 @@ class AcmeStore:
         meta_file_name: "metadata",
     }
 
+    accounts_dir_name: str = "accounts"
+
     def __init__(
         self,
         certs_store_arn: str,
@@ -46,14 +48,14 @@ class AcmeStore:
         if not override_directory:
             self.temp_dir = TemporaryDirectory()
             self.directory = self.temp_dir.name
-            self.accounts_path = f"{self.directory}/config-dir/accounts"
+            self.accounts_path = f"{self.config_dir}/{self.accounts_dir_name}"
             os.makedirs(self.accounts_path, exist_ok=True)
         else:
             self.directory = override_directory
             try:
                 self.accounts_path = find_accounts_dir(override_directory)
             except OSError:
-                self.accounts_path = f"{self.directory}/config-dir/accounts"
+                self.accounts_path = f"{self.config_dir}/{self.accounts_dir_name}"
                 if not os.path.exists(self.accounts_path):
                     os.makedirs(self.accounts_path, exist_ok=True)
         self.init_pull()
@@ -61,6 +63,18 @@ class AcmeStore:
     @property
     def existing_accounts(self) -> list[Account]:
         return get_acme_accounts(self.accounts_path)
+
+    @property
+    def config_dir(self) -> str:
+        return f"{self.directory}/config-dir"
+
+    @property
+    def logs_dir(self) -> str:
+        return f"{self.directory}/logs-dir"
+
+    @property
+    def work_dir(self) -> str:
+        return f"{self.directory}/work-dir"
 
     @property
     def config(self) -> AcmeConfig:
@@ -100,11 +114,17 @@ class AcmeStore:
         now = datetime.datetime.now(tz=None)
         for endpoint, accounts in accounts_per_endpoints(self.config).items():
             latest_account = accounts[0]
-            latest_account_path = f"{self.directory}/config-dir/accounts/{endpoint}/directory/{accounts[0].dirname}"
+            latest_account_path = (
+                f"{self.config_dir}/{self.accounts_dir_name}"
+                f"/{endpoint}/directory/{accounts[0].dirname}"
+            )
             diff = now - get_meta_creation_dt(latest_account)
             to_clear: list = []
             for account in accounts:
-                _account_path = f"{self.directory}/config-dir/accounts/{endpoint}/directory/{account.dirname}"
+                _account_path = (
+                    f"{self.config_dir}/{self.accounts_dir_name}"
+                    f"/{endpoint}/directory/{account.dirname}"
+                )
                 to_clear.append(_account_path)
                 created_on = get_meta_creation_dt(account)
                 if not diff or (diff and diff > (now - created_on)):
@@ -126,7 +146,7 @@ class AcmeStore:
         else:
             return self._store_arn
 
-    def __del__(self):
+    def save(self):
         client = self.session.client("secretsmanager")
         secret_value = AcmeConfig(
             accounts=self.merge_used_accounts_with_backup()
