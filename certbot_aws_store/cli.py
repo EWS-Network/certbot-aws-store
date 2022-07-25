@@ -3,6 +3,7 @@
 """
 CLI Entrypoint for certbot-aws-store
 """
+import sys
 from argparse import ArgumentParser
 
 from boto3.session import Session
@@ -105,32 +106,37 @@ def cli_entrypoint():
     store_mgr = AcmeStore(args.secret, args.override_folder, session)
     certificate = AcmeCertificate(
         args.domain[0],
-        store_mgr.directory,
         store_mgr.staging_account if args.dry_run else store_mgr.account,
         subject_alts=args.domain[1:],
     )
-    certificate_content = certificate.create(
-        args.email, acme_store=store_mgr, staging=args.dry_run
-    )
-    backends: dict = {"secretsmanager": {"prefixKey": args.secrets_prefixKey}}
-    if args.bucketName:
-        backends["s3"]: dict = {"bucketName": args.bucketName}
-        if args.s3_prefix_key:
-            backends["s3"]["prefixKey"] = args.s3_prefix_key
-    certificate.save_to_backends(
-        backends,
-        certificate_content,
-        register_to_acm=args.register_to_acm,
-        split_secrets=args.split_secrets,
-        session=session,
-    )
-    print(
-        certificate.hostname,
-        certificate.get_account_id(store_mgr),
-        certificate.serial_number,
-    )
-    print(certificate.urn)
+    try:
+        certificate_content = certificate.create(
+            args.email, acme_store=store_mgr, staging=args.dry_run
+        )
+        backends: dict = {"secretsmanager": {"prefixKey": args.secrets_prefixKey}}
+        if args.bucketName:
+            backends["s3"]: dict = {"bucketName": args.bucketName}
+            if args.s3_prefix_key:
+                backends["s3"]["prefixKey"] = args.s3_prefix_key
+        certificate.save_to_backends(
+            backends,
+            certificate_content,
+            register_to_acm=args.register_to_acm,
+            split_secrets=args.split_secrets,
+            session=session,
+        )
+        print(
+            certificate.hostname,
+            certificate.get_account_id(store_mgr),
+            certificate.serial_number,
+        )
+        print(certificate.urn)
+        store_mgr.save()
+        return 0
+    except Exception as error:
+        print(error)
+        return 1
 
 
 if __name__ == "__main__":
-    cli_entrypoint()
+    sys.exit(cli_entrypoint())

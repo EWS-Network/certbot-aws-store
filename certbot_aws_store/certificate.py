@@ -104,17 +104,25 @@ class AcmeCertificate:
     def __init__(
         self,
         hostname,
-        acm_store_dir: str,
         acme_store_account: Account,
         subject_alts: list = None,
         table_name: str = None,
+        region_name: str = None,
     ):
+        """
+        Init the certificate. If all you need is download, you can set acme_store_account to None
+
+        :param str hostname:
+        :param AcmeStore acme_store_account:
+        :param list[str] subject_alts:
+        :param str table_name:
+        :param str region_name:
+        """
         self._hostname = hostname
         self.subjects_alts = subject_alts if subject_alts else []
-        self.acm_store_dir = acm_store_dir
         self.registry_table = ModelTypeFactory(CertificateArns).create(
             custom_table_name=table_name or REGISTRY_TABLE,
-            custom_region=REGISTRY_REGION,
+            custom_region=region_name or REGISTRY_REGION,
         )
         self.registry_cert = self.registry_table(hash_key=self.hostname)
         self.s3_backend = None
@@ -160,23 +168,23 @@ class AcmeCertificate:
 
     def create(self, email: str, acme_store: AcmeStore, staging: bool = False):
         if self.acme_account:
-            args = (email, self.hostnames, self.acm_store_dir, staging)
+            args = (email, self.hostnames, acme_store.directory, staging)
         else:
-            args = (email, self.hostnames, self.acm_store_dir, staging, True)
+            args = (email, self.hostnames, acme_store.directory, staging, True)
         process = Process(
             target=provision_cert,
             args=args,
         )
         process.start()
         process.join()
-        live_path = f"{self.acm_store_dir}/config-dir/live/{self.hostname}"
+        live_path = f"{acme_store.config_dir}/live/{self.hostname}"
         certificate_files: dict = {}
         for file, attribute in self.files.items():
             file_path = f"{live_path}/{file}"
             certificate_files[file]: str = easy_read(file_path)
             self.certs_paths[attribute]: str = os.path.abspath(file_path)
         self.renewal_config = find_certificate_renewal_config(
-            self.acm_store_dir, self.hostname
+            acme_store.directory, self.hostname
         )
         if not self.acme_account:
             acme_store.set_execution_accounts()
