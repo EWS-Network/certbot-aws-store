@@ -21,14 +21,14 @@ readme = "README.rst"
 exclude = ["*.pyc", "*~", "*pycache*"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.7"
 certbot = "^1.29.0"
 compose-x-common = "^1.0.4"
-certbot-route53 = "^0.2.1"
 pynamodb = "^5.2.1"
 argparse = "^1.4.0"
 pyOpenSSL = "^22.0.0"
 b-dynamodb-common = "^0.4.0"
+certbot-route53 = "^0.2.0"
 
 [tool.poetry.dev-dependencies]
 black = "^22.6.0"
