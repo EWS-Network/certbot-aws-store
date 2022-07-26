@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "certbot-aws-store"
-version = "0.2.0"
+version = "0.2.1"
 description = "Generate Let's Encrypt certificates and store into AWS"
 authors = ["John Preston <john@ews-network.net>"]
 maintainers = ["John Preston <john@ews-network.net>"]
@@ -24,7 +24,7 @@ exclude = ["*.pyc", "*~", "*pycache*"]
 python = "^3.8"
 certbot = "^1.29.0"
 compose-x-common = "^1.0.4"
-certbot-route53 = "^0.2.0"
+certbot-route53 = "^0.2.1"
 pynamodb = "^5.2.1"
 argparse = "^1.4.0"
 pyOpenSSL = "^22.0.0"
@@ -60,7 +60,7 @@ known_first_party = "kelvin"
 github_url = "https://github.com/ews-network/certbot-aws-store"
 
 [tool.tbump.version]
-current = "0.2.0"
+current = "0.2.1"
 
 regex = '''
   (?P<major>\d+)
