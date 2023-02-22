@@ -24,11 +24,17 @@ The needed RCU/WCU should be 5/5 (default) or lower.
 Install
 =========
 
+For your user
+
 .. code-block::
 
     pip install certbot-aws-store --user
 
-    python3 -m venv venv
+In a python virtual environment
+
+.. code-block::
+
+   python3 -m venv venv
     source venv/bin/activate
     pip install pip -U; pip install certbot-aws-store
 
@@ -102,21 +108,37 @@ For example, the following represents a certificate stored in Secrets Manager, S
 
 .. code-block:: json
 
-    {
-     "hostname": "test-local-0106.bdd-testing.compose-x.io",
-     "account_id": "61811954",
-     "acmArn": "arn:aws:acm:eu-west-1:373709667837:certificate/82b3ab6f-5b53-4a3b-ab7d-ccd1ecb52255",
-     "endpoint": "acme-staging-v02.api.letsencrypt.org",
-     "expiry": "2022-10-20T22:38:59.000000+0000",
-     "s3Arn": {
-      "certChain": "arn:aws:s3:::dev-test-bucket::certbot/store/acme-staging-v02.api.letsencrypt.org/61812954/test-local-0106.bdd-testing.compose-x.io/chain.pem",
-      "fullChain": "arn:aws:s3:::dev-test-bucket::certbot/store/acme-staging-v02.api.letsencrypt.org/61812954/test-local-0106.bdd-testing.compose-x.io/fullchain.pem",
-      "privateKey": "arn:aws:s3:::dev-test-bucket::certbot/store/acme-staging-v02.api.letsencrypt.org/61812954/test-local-0106.bdd-testing.compose-x.io/privkey.pem",
-      "publicKey": "arn:aws:s3:::dev-test-bucket::certbot/store/acme-staging-v02.api.letsencrypt.org/61812954/test-local-0106.bdd-testing.compose-x.io/cert.pem"
-     },
-     "secretsmanagerArn": "arn:aws:secretsmanager:eu-west-1:373709667837:secret:certbot/store/acme-staging-v02.api.letsencrypt.org/61812954/test-local-0106.bdd-testing.compose-x.io-HpgyTD",
-     "secretsmanagerCertsArn": {}
-    }
+		{
+		"hostname": "dummy-004.bdd-testing.compose-x.io",
+		"account_id": "89646024",
+		"acmArn": "arn:aws:acm:eu-west-1:373709687877:certificate/3d2ed82d-ce08-474b-93fd-5ff85ec532d5",
+		"alt_subjects": [
+		"dummy-005.bdd-testing.compose-x.io"
+		],
+		"endpoint": "acme-staging-v02.api.letsencrypt.org",
+		"expiry": "2023-05-23T18:28:18.000000+0000",
+		"s3Arn": {
+		"certChain": {
+		"Arn": "arn:aws:s3:::certs-home.ews-network.net::certbot/store/acme-staging-v02.api.letsencrypt.org/89646024/dummy-004.bdd-testing.compose-x.io/chain.pem",
+		"Url": "s3://certs-home.ews-network.net/certbot/store/acme-staging-v02.api.letsencrypt.org/89646024/dummy-004.bdd-testing.compose-x.io/chain.pem"
+		},
+		"fullChain": {
+		"Arn": "arn:aws:s3:::certs-home.ews-network.net::certbot/store/acme-staging-v02.api.letsencrypt.org/89646024/dummy-004.bdd-testing.compose-x.io/fullchain.pem",
+		"Url": "s3://certs-home.ews-network.net/certbot/store/acme-staging-v02.api.letsencrypt.org/89646024/dummy-004.bdd-testing.compose-x.io/fullchain.pem"
+		},
+		"privateKey": {
+		"Arn": "arn:aws:s3:::certs-home.ews-network.net::certbot/store/acme-staging-v02.api.letsencrypt.org/89646024/dummy-004.bdd-testing.compose-x.io/privkey.pem",
+		"Url": "s3://certs-home.ews-network.net/certbot/store/acme-staging-v02.api.letsencrypt.org/89646024/dummy-004.bdd-testing.compose-x.io/privkey.pem"
+		},
+		"publicKey": {
+		"Arn": "arn:aws:s3:::certs-home.ews-network.net::certbot/store/acme-staging-v02.api.letsencrypt.org/89646024/dummy-004.bdd-testing.compose-x.io/cert.pem",
+		"Url": "s3://certs-home.ews-network.net/certbot/store/acme-staging-v02.api.letsencrypt.org/89646024/dummy-004.bdd-testing.compose-x.io/cert.pem"
+		}
+		},
+		"secretsmanagerArn": "arn:aws:secretsmanager:eu-west-1:373709687877:secret:certbot/store/acme-staging-v02.api.letsencrypt.org/89646024/dummy-004.bdd-testing.compose-x.io-14q7JZ",
+		"secretsmanagerCertsArn": {}
+		}
+
 
 The registry will be used in the future to evaluate / list the certificates that we have and decide whether or not
 a certificate should be renewed.
