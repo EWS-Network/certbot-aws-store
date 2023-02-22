@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "certbot-aws-store"
-version = "0.2.2"
+version = "0.3.0"
 description = "Generate Let's Encrypt certificates and store into AWS"
 authors = ["John Preston <john@ews-network.net>"]
 maintainers = ["John Preston <john@ews-network.net>"]
@@ -60,7 +60,7 @@ known_first_party = "kelvin"
 github_url = "https://github.com/ews-network/certbot-aws-store"
 
 [tool.tbump.version]
-current = "0.2.2"
+current = "0.3.0"
 
 regex = '''
   (?P<major>\d+)
