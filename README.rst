@@ -128,3 +128,16 @@ everything, including S3.
 
     If you use ``--dry-run`` to use the ACME staging endpoint for testing, and request the same domain name as for
     the production ACME endpoint, and store the certificate to ACM, the latest of the two updates the ACM certificate.
+
+
+Why "bother" ?
+===============
+
+With certbot, per account you get 50 certificates requests per week. Which might sound low, but then is even lower when
+you consider the constraints of other limits.
+
+So of course, considering a world of microservices where you might have 100s of containers needing certificates at the
+same time, you would breach that limit in no time. So you store them centrally somewhere.
+
+Retrieving the same certificates consistently also will address issues you might have for your clients if you enable
+features such as HSTS (if you do, allow for rotation within the expiry of the certificates!).
