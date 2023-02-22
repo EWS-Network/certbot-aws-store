@@ -135,6 +135,10 @@ class S3Backend(AWSBackend):
         return arn
 
     @property
+    def url(self) -> str:
+        return f"s3://{self.bucket.name}/{self.key}"
+
+    @property
     def bucket(self):
         if not self.bucket_name:
             warnings.warn("You must set the bucket name first")

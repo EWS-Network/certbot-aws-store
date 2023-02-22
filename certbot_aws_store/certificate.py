@@ -119,7 +119,7 @@ class AcmeCertificate:
         :param str region_name:
         """
         self._hostname = hostname
-        self.subjects_alts = subject_alts if subject_alts else []
+        self.alt_subjects = subject_alts if subject_alts else []
         self.registry_table = ModelTypeFactory(CertificateArns).create(
             custom_table_name=table_name or REGISTRY_TABLE,
             custom_region=region_name or REGISTRY_REGION,
@@ -143,7 +143,7 @@ class AcmeCertificate:
         """
         List with the main domain name and subject alternative names
         """
-        return [self.hostname] + self.subjects_alts
+        return [self.hostname] + self.alt_subjects
 
     @property
     def urn(self) -> str:
@@ -259,7 +259,9 @@ class AcmeCertificate:
                 ),
                 session,
             )
-            s3_registry_arn.update({attribute_name: s3_backend.arn})
+            s3_registry_arn.update(
+                {attribute_name: {"Arn": s3_backend.arn, "Url": s3_backend.url}}
+            )
 
     def save_to_secretsmanager(
         self,
@@ -353,6 +355,7 @@ class AcmeCertificate:
             "expiry": self.expiry_date,
             "account_id": self.acme_account.account_id,
             "endpoint": self.acme_account.endpoint,
+            "alt_subjects": self.alt_subjects,
         }
         if s3_registry_arn:
             props["s3Arn"] = s3_registry_arn

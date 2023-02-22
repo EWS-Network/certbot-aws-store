@@ -7,7 +7,12 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from os import environ
 
-from pynamodb.attributes import MapAttribute, UnicodeAttribute, UTCDateTimeAttribute
+from pynamodb.attributes import (
+    ListAttribute,
+    MapAttribute,
+    UnicodeAttribute,
+    UTCDateTimeAttribute,
+)
 from pynamodb.models import Model
 
 REGISTRY_TABLE = environ.get("REGISTRY_TABLE", "certbot-registry")
@@ -17,7 +22,6 @@ REGISTRY_REGION = environ.get(
 
 
 class CertificateArns(Model):
-
     """
     :cvar secretsmanagerCertsArn: Mapping to each individual certificate in their own secret
     :cvar secretsmanagerArn: Secret with all the certificates in the single secret
@@ -28,14 +32,23 @@ class CertificateArns(Model):
         region = REGISTRY_REGION
 
     hostname = UnicodeAttribute(hash_key=True)
+    alt_subjects = ListAttribute(null=False)
     account_id = UnicodeAttribute(null=False)
     endpoint = UnicodeAttribute(null=False)
     expiry = UTCDateTimeAttribute(null=True)
     s3Arn = MapAttribute(
-        certChain=UnicodeAttribute(null=False),
-        fullChain=UnicodeAttribute(null=False),
-        privateKey=UnicodeAttribute(null=False),
-        publicKey=UnicodeAttribute(null=False),
+        certChain=MapAttribute(
+            Url=UnicodeAttribute(null=False), Arn=UnicodeAttribute(null=False)
+        ),
+        fullChain=MapAttribute(
+            Url=UnicodeAttribute(null=False), Arn=UnicodeAttribute(null=False)
+        ),
+        privateKey=MapAttribute(
+            Url=UnicodeAttribute(null=False), Arn=UnicodeAttribute(null=False)
+        ),
+        publicKey=MapAttribute(
+            Url=UnicodeAttribute(null=False), Arn=UnicodeAttribute(null=False)
+        ),
         passphrase=UnicodeAttribute(null=True),
     )
     secretsmanagerCertsArn = MapAttribute(
