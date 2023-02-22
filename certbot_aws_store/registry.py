@@ -32,7 +32,7 @@ class CertificateArns(Model):
         region = REGISTRY_REGION
 
     hostname = UnicodeAttribute(hash_key=True)
-    alt_subjects = ListAttribute(null=False)
+    alt_subjects = ListAttribute(null=True)
     account_id = UnicodeAttribute(null=False)
     endpoint = UnicodeAttribute(null=False)
     expiry = UTCDateTimeAttribute(null=True)
