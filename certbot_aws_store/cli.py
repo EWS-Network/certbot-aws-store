@@ -20,7 +20,7 @@ def cli_entrypoint():
         type=str,
         required=True,
         dest="secret",
-        help="ACME Configuration secret name/ARN",
+        help="ACME Account Configuration secret name/ARN",
     )
     parser.add_argument(
         "--domain",

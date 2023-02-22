@@ -122,17 +122,16 @@ class S3Backend(AWSBackend):
         super().__init__(prefix_path, session)
 
     def set_arn(self, arn: str):
-        if not S3_BUCKET_ARN_RE.match(arn):
+        parts = self.bucket_file_arn_re.match(arn)
+        if not parts:
             raise ValueError(
                 "S3 ARN is not valid. Got",
                 arn,
                 "Expected to match",
                 S3_BUCKET_ARN_RE.pattern,
             )
-        parts = self.bucket_file_arn_re.match(arn)
-        if parts:
-            self.bucket_name = parts.group("bucket")
-            self.key = parts.group("key")
+        self.bucket_name = parts.group("bucket")
+        self.key = parts.group("key")
         return arn
 
     @property

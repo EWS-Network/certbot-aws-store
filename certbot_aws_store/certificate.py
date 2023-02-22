@@ -313,21 +313,33 @@ class AcmeCertificate:
         secretsmanager_registry_arn: dict = {}
         for backend_name, backend_definition in backends.items():
             if backend_name == "s3":
-                self.save_to_s3(
-                    s3_registry_arn, backend_definition, cert_content, session
-                )
+                try:
+                    self.save_to_s3(
+                        s3_registry_arn, backend_definition, cert_content, session
+                    )
+                except Exception as error:
+                    print(error)
+                    print("Failed to save certificate to S3")
             elif backend_name == "secretsmanager":
-                secretsmanager_registry_arn = self.save_to_secretsmanager(
-                    split_secrets,
-                    cert_content,
-                    backend_definition,
-                    session,
-                )
+                try:
+                    secretsmanager_registry_arn = self.save_to_secretsmanager(
+                        split_secrets,
+                        cert_content,
+                        backend_definition,
+                        session,
+                    )
+                except Exception as error:
+                    print(error)
+                    print("Failed to save certificate to Secrets manager")
 
+        acm_arn = None
         if register_to_acm:
-            acm_arn = self.register_to_acm(cert_content, session)
-        else:
-            acm_arn = None
+            try:
+                acm_arn = self.register_to_acm(cert_content, session)
+            except Exception as error:
+                print(error)
+                print("Failed to save certificate to ACM")
+
         self.register_to_registry(s3_registry_arn, secretsmanager_registry_arn, acm_arn)
 
     def register_to_registry(
