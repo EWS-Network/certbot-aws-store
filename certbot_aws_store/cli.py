@@ -9,6 +9,7 @@ from argparse import ArgumentParser
 from boto3.session import Session
 
 from .acme_store import AcmeStore
+from .certbot_wrappers import request_certificate
 from .certificate import AcmeCertificate
 
 
@@ -110,8 +111,8 @@ def cli_entrypoint():
         subject_alts=args.domain[1:],
     )
     try:
-        certificate_content = certificate.create(
-            args.email, acme_store=store_mgr, staging=args.dry_run
+        certificate_content = request_certificate(
+            certificate, args.email, acme_store=store_mgr, staging=args.dry_run
         )
         backends: dict = {"secretsmanager": {"prefixKey": args.secrets_prefixKey}}
         if args.bucketName:

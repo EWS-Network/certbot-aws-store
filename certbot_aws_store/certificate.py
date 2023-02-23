@@ -18,12 +18,10 @@ if TYPE_CHECKING:
     from certbot_aws_store.acme_store import AcmeStore
     from certbot_aws_store.acme_config import Account
 
-from multiprocessing import Process
 
 import OpenSSL
 from b_dynamodb_common.models.model_type_factory import ModelTypeFactory
 from boto3.session import Session
-from certbot.main import main
 from compose_x_common.aws import get_session
 from compose_x_common.aws.acm import find_certificate_from_domain_name
 from compose_x_common.compose_x_common import set_else_none
@@ -41,51 +39,6 @@ from certbot_aws_store.registry import REGISTRY_REGION, REGISTRY_TABLE, Certific
 from certbot_aws_store.utils import easy_read
 
 
-def find_certificate_renewal_config(top_path: str, hostname: str) -> list:
-    renewal_config_file_name = f"{hostname}.conf"
-    for root, dirs, files in os.walk(top_path):
-        for _file in files:
-            if _file == renewal_config_file_name:
-                file_path = os.path.join(root, _file)
-                with open(file_path) as config_fd:
-                    return config_fd.readlines()
-
-
-def provision_cert(
-    email,
-    domains: list[str],
-    dir_path: str,
-    staging: bool = False,
-    accept_tos: bool = True,
-    config_dir: str = None,
-    logs_dir: str = None,
-    work_dir: str = None,
-):
-    """
-    Provisions a new certificate with Route53 validation
-    """
-    cmd = [
-        "certonly",
-        "-n",
-        "--dns-route53",
-        "-d",
-        ",".join(domains),
-        "--config-dir",
-        config_dir or f"{dir_path}/config-dir/",
-        "--work-dir",
-        work_dir or f"{dir_path}/work-dir/",
-        "--logs-dir",
-        logs_dir or f"{dir_path}/logs-dir/",
-    ]
-    if staging:
-        cmd.append("--test-cert")
-    if accept_tos:
-        cmd.append("--agree-tos")
-        cmd.append("--email")
-        cmd.append(email)
-    main(cmd)
-
-
 class AcmeCertificate:
     certificate_file_name: str = "cert.pem"
     private_key_file_name: str = "privkey.pem"
@@ -98,7 +51,6 @@ class AcmeCertificate:
         private_key_file_name: "privateKey",
         full_chain_file_name: "fullChain",
     }
-
     default_prefix: str = "certbot/store/"
 
     def __init__(
@@ -165,33 +117,6 @@ class AcmeCertificate:
     def get(self):
         cert = self.registry_cert.get(hash_key=self.hostname)
         return cert.to_json()
-
-    def create(self, email: str, acme_store: AcmeStore, staging: bool = False):
-        if self.acme_account:
-            args = (email, self.hostnames, acme_store.directory, staging)
-        else:
-            args = (email, self.hostnames, acme_store.directory, staging, True)
-        process = Process(
-            target=provision_cert,
-            args=args,
-        )
-        process.start()
-        process.join()
-        live_path = f"{acme_store.config_dir}/live/{self.hostname}"
-        certificate_files: dict = {}
-        for file, attribute in self.files.items():
-            file_path = f"{live_path}/{file}"
-            certificate_files[file]: str = easy_read(file_path)
-            self.certs_paths[attribute]: str = os.path.abspath(file_path)
-        self.renewal_config = find_certificate_renewal_config(
-            acme_store.directory, self.hostname
-        )
-        if not self.acme_account:
-            acme_store.set_execution_accounts()
-            self.acme_account = (
-                acme_store.staging_account if staging else acme_store.account
-            )
-        return certificate_files
 
     @property
     def certbot_account_id(self) -> Union[str, None]:

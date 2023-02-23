@@ -22,13 +22,18 @@ exclude = ["*.pyc", "*~", "*pycache*"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-certbot = "^2.3.0"
+
 compose-x-common = "^1.2"
 pynamodb = "^5.2.1"
 argparse = "^1.4.0"
 pyOpenSSL = "^22.0.0"
 b-dynamodb-common = "^0.4.1"
-certbot-dns-route53 = "^2.3"
+certbot = {version = "^2.3.0", optional = true }
+certbot-dns-route53 = { version = "^2.3", optional = true }
+
+[tool.poetry.extras]
+cli = ["certbot", "certbot-dns-route53"]
+certbot = ["certbot", "certbot-dns-route53"]
 
 [tool.poetry.dev-dependencies]
 black = "^23"
