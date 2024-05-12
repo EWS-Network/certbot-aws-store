@@ -8,17 +8,25 @@ import datetime
 import json
 import os
 import stat
+from dataclasses import asdict
 from shutil import rmtree
 from tempfile import TemporaryDirectory
 from urllib.parse import urlparse
 
 from boto3.session import Session
 from compose_x_common.aws import get_session
+from dacite import from_dict
 from dateutil import parser as dateparser
 
 from certbot_aws_store.acme_config import Account, AcmeConfig
 from certbot_aws_store.backends import SECRET_ARN_RE
 from certbot_aws_store.utils import easy_read
+
+
+def is_staging_account(account: Account) -> bool:
+    if "acme-staging" in account.endpoint:
+        return True
+    return False
 
 
 class AcmeStore:
@@ -90,7 +98,7 @@ class AcmeStore:
             config_content = json.loads(config_r["SecretString"])
             config_content["store_arn"] = config_r["ARN"]
             self._store_arn = config_r["ARN"]
-            config = AcmeConfig(**config_content)
+            config = from_dict(AcmeConfig, config_content)
             self.layout_accounts_folders(config)
         except client.exceptions.ResourceNotFoundException:
             print(
@@ -134,7 +142,7 @@ class AcmeStore:
             set_latest_endpoint_account(
                 endpoint, latest_account, latest_account_path, to_clear
             )
-            if latest_account.is_staging():
+            if is_staging_account(latest_account):
                 self.staging_account = latest_account
             else:
                 self.account = latest_account
@@ -148,9 +156,9 @@ class AcmeStore:
 
     def save(self):
         client = self.session.client("secretsmanager")
-        secret_value = AcmeConfig(
-            accounts=self.merge_used_accounts_with_backup()
-        ).json()
+        secret_value: str = json.dumps(
+            asdict(AcmeConfig(accounts=self.merge_used_accounts_with_backup()))
+        )
         print(
             "Saving accounts",
             [

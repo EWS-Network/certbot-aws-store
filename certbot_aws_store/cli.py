@@ -7,10 +7,28 @@ import sys
 from argparse import ArgumentParser
 
 from boto3.session import Session
+from publicsuffixlist import PublicSuffixList
 
 from .acme_store import AcmeStore
 from .certbot_wrappers import request_certificate
 from .certificate import AcmeCertificate
+
+
+def validate_domain_names(domains: list[str]):
+    """
+    Validates all the domain names requested use the same public domain
+    """
+    psl = PublicSuffixList()
+    domain = psl.publicsuffix(domains[0])
+    for _domain in domains[1:]:
+        if domain not in _domain:
+            raise (
+                "Domain name requested",
+                _domain,
+                "does not use the same public domain as the CN",
+                domain,
+                domains[0],
+            )
 
 
 def cli_entrypoint():
@@ -99,11 +117,11 @@ def cli_entrypoint():
     )
 
     args = parser.parse_args()
+    validate_domain_names(args.domain)
     if args.profile:
         session = Session(profile_name=args.profile)
     else:
         session = Session()
-
     store_mgr = AcmeStore(args.secret, args.override_folder, session)
     certificate = AcmeCertificate(
         args.domain[0],
@@ -114,28 +132,38 @@ def cli_entrypoint():
         certificate_content = request_certificate(
             certificate, args.email, acme_store=store_mgr, staging=args.dry_run
         )
+    except Exception as e:
+        print("HERE MOFO", e)
+    try:
         backends: dict = {"secretsmanager": {"prefixKey": args.secrets_prefixKey}}
         if args.bucketName:
             backends["s3"]: dict = {"bucketName": args.bucketName}
             if args.s3_prefix_key:
                 backends["s3"]["prefixKey"] = args.s3_prefix_key
-        certificate.save_to_backends(
-            backends,
-            certificate_content,
-            register_to_acm=args.register_to_acm,
-            split_secrets=args.split_secrets,
-            session=session,
-        )
-        print(
-            certificate.hostname,
-            certificate.get_account_id(store_mgr),
-            certificate.serial_number,
-        )
-        print(certificate.urn)
+            certificate.save_to_backends(
+                backends,
+                certificate_content,
+                register_to_acm=args.register_to_acm,
+                split_secrets=args.split_secrets,
+                session=session,
+            )
+        try:
+            print(
+                certificate.hostname,
+                certificate.get_account_id(store_mgr),
+                certificate.serial_number,
+            )
+            print(certificate.urn)
+        except Exception as e:
+            print("THSI IS IT", e)
+    except Exception as error:
+        print("HERE HER", error)
+        return 1
+    try:
         store_mgr.save()
         return 0
     except Exception as error:
-        print(error)
+        print("HERE AHOLE", error)
         return 1
 
 

@@ -33,7 +33,7 @@ class CertificateArns(Model):
 
     hostname = UnicodeAttribute(hash_key=True)
     alt_subjects = ListAttribute(null=True)
-    account_id = UnicodeAttribute(null=False)
+    account_id = UnicodeAttribute(null=False, range_key=True)
     endpoint = UnicodeAttribute(null=False)
     expiry = UTCDateTimeAttribute(null=True)
     s3Arn = MapAttribute(

@@ -10,17 +10,6 @@ Features
 * Keep track of ACME account configuration and store securely in AWS SecretsManager
 * Keep track of certificates issued and stored in account via DynamoDB
 
-Pre-Requisites
-================
-
-* A function AWS Account and credentials to make API calls
-* Access to DynamoDB + SecretsManager + S3 (optional)
-
-We recommend to create the dynamodb table using the ``certbot-store-registry.template`` CFN template, otherwise
-certbot-aws-store will attempt to create it programmatically.
-
-The needed RCU/WCU should be 5/5 (default) or lower.
-
 Install
 =========
 
@@ -28,7 +17,7 @@ For your user
 
 .. code-block::
 
-    pip install certbot-aws-store --user
+    pip install certbot-aws-store[init] --user
 
 In a python virtual environment
 
@@ -36,10 +25,50 @@ In a python virtual environment
 
    python3 -m venv venv
     source venv/bin/activate
-    pip install pip -U; pip install certbot-aws-store
+    pip install pip -U; pip install certbot-aws-store[init]
 
 Usage
 ======
+
+Pre-Requisites
+------------------
+
+* A function AWS Account and credentials to make API calls
+* Access to DynamoDB + SecretsManager + S3 (optional)
+
+We recommend to create the dynamodb table using the ``certbot_aws_store_init.py`` script, otherwise
+certbot-aws-store will attempt to create it programmatically.
+
+Using the below script will create a DynamoDB Global Table, allowing you to perform R/W from multiple regions to
+the "registry" table which keeps track of your ACME account settings and configuration.
+
+.. code-block::
+
+    python certbot_aws_store_init.py -h
+    usage: Certbot init CLI [-h] [--primary-region PRIMARY_REGION] [--replica-region REPLICA_REGION] [--table-name TABLE_NAME] [--bucket-name BUCKET_NAME] [--no-bucket] [--stack-name STACK_NAME] [-o OUTPUT_TEMPLATE]
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --primary-region PRIMARY_REGION
+                            The primary region for the DynamoDB Table and the S3 bucket. Defaults to user session
+      --replica-region REPLICA_REGION
+                            List of AWS Regions to set the DynamoDB replication for
+      --table-name TABLE_NAME
+                            Name of the dynamodb table to use for the certificates registry
+      --bucket-name BUCKET_NAME
+                            Name of the S3 bucket to store the certificates into by default
+      --no-bucket           It set, the template will not add a default bucket to store the certificates into.
+      --stack-name STACK_NAME
+                            Renders the template & deploys to AWS CLoudFormation using this stack name
+      -o OUTPUT_TEMPLATE, --output-template OUTPUT_TEMPLATE
+                            Path/Name of the template to write to
+
+To deploy, you can either use the argument ``--stack-name`` or run the following command, after generating the template
+
+.. code-block::
+
+
+
 
 As a CLI
 ----------

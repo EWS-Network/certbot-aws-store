@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import datetime
 import json
-import os.path
 import re
 import warnings
 from typing import TYPE_CHECKING, Union
@@ -76,7 +75,13 @@ class AcmeCertificate:
             custom_table_name=table_name or REGISTRY_TABLE,
             custom_region=region_name or REGISTRY_REGION,
         )
-        self.registry_cert = self.registry_table(hash_key=self.hostname)
+        try:
+            self.registry_cert = self.registry_table(
+                hash_key=self.hostname, range_key=acme_store_account.account_id
+            )
+
+        except Exception as e:
+            print(e)
         self.s3_backend = None
         self.secretsmanager_backend = None
         self.certs_paths: dict = {}
@@ -109,13 +114,17 @@ class AcmeCertificate:
             self.registry_cert.create_table()
             return False
         try:
-            self.registry_cert.get(hash_key=self.hostname)
+            self.registry_cert.get(
+                hash_key=self.hostname, range_key=self.acme_account.account_id
+            )
             return True
         except self.registry_cert.DoesNotExist:
             return False
 
     def get(self):
-        cert = self.registry_cert.get(hash_key=self.hostname)
+        cert = self.registry_cert.get(
+            hash_key=self.hostname, range_key=self.acme_account.account_id
+        )
         return cert.to_json()
 
     @property
@@ -302,7 +311,7 @@ class AcmeCertificate:
         session = get_session(session)
         certificate = find_certificate_from_domain_name(self.hostname, True, session)
         client = session.client("acm")
-        if certificate:
+        if certificate and certificate["Type"] == "IMPORTED":
             arn = certificate["CertificateArn"]
             client.import_certificate(
                 CertificateArn=arn,

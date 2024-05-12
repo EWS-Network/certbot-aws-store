@@ -9,6 +9,9 @@
     "accounts"
   ],
   "properties": {
+    "store_arn": {
+      "type": "string"
+    },
     "accounts": {
       "type": "array",
       "uniqueItems": true,
